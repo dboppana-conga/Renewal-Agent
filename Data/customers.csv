@@ -1,0 +1,11 @@
+customer_id,name,industry,tier,annual_revenue,acv,total_arr,created_at
+CUST-001,Acme Corp,Manufacturing,Mid-Market,5000000,34200,34200,2024-06-15T00:00:00Z
+CUST-002,GlobalTech Ltd,Technology,Enterprise,25000000,115200,115200,2023-01-10T00:00:00Z
+CUST-003,Sunrise Industries,Healthcare,Mid-Market,8000000,86400,86400,2021-03-20T00:00:00Z
+CUST-004,Peak Solutions,Retail,SMB,1200000,15120,15120,2025-11-01T00:00:00Z
+CUST-005,Nexus Corp,Financial Services,SMB,900000,17280,17280,2026-03-15T00:00:00Z
+CUST-006,BlueStar Analytics,Technology,Mid-Market,7500000,55680,55680,2020-08-12T00:00:00Z
+CUST-007,Vertex Inc,Professional Services,Mid-Market,4200000,35280,35280,2023-09-01T00:00:00Z
+CUST-008,Quantum Systems,Technology,Enterprise,18000000,93600,93600,2022-05-18T00:00:00Z
+CUST-009,Atlas Group,Real Estate,Enterprise,30000000,165600,165600,2025-03-01T00:00:00Z
+CUST-010,Meridian Co,Healthcare,Enterprise,12000000,146400,146400,2019-07-04T00:00:00Z

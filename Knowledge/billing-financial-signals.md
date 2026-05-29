@@ -101,13 +101,34 @@ flowchart TD
 
 ```mermaid
 erDiagram
-    CUSTOMER ||--o{ BILLING_HEADER : "BillTo"
+    CUSTOMER ||--o{ ASSET_LINE_ITEM : "Account"
+    ASSET_LINE_ITEM ||--|| BILLING_HEADER : "CurrentOrderLineItem"
+    ASSET_LINE_ITEM ||--o{ ASSET_TRANSACTION_HISTORY : "AssetLineItem"
     BILLING_HEADER ||--o{ BILLING_SCHEDULE_RECORD : "BillingHeader FK"
     BILLING_SCHEDULE_RECORD ||--o{ BILLING_SCHEDULE_DETAIL : "BillingScheduleRecord FK"
     CUSTOMER ||--o{ INVOICES : "BillTo"
     INVOICES ||--o{ PAYMENT_ATTEMPTS : "invoice_id"
     INVOICES ||--o{ BILLING_DISPUTES : "invoice_id"
-    BILLING_HEADER ||--o{ ASSET_TRANSACTION_HISTORY : "CurrentOrderLineItem"
+
+    ASSET_LINE_ITEM {
+        string Id PK
+        string Account FK
+        string Product FK
+        string ProductName
+        decimal Quantity
+        currency NetPrice
+        currency ListPrice
+        currency ARR
+        currency MRR
+        currency TCV
+        string PriceType
+        string Status
+        date StartDate
+        date EndDate
+        decimal SellingTerm
+        string AssetVersion
+        string CurrentOrderLineItem
+    }
 
     BILLING_HEADER {
         string Id PK
@@ -276,6 +297,42 @@ flowchart LR
 ---
 
 ## 3. Platform Object Definitions
+
+### 3.0 AssetLineItem
+**Purpose:** Root commercial record representing a single product the customer actively owns. All billing objects, transaction history, and scoring queries anchor to this object. Every customer can have multiple AssetLineItems (one per product/SKU).
+**Platform Name:** `AssetLineItem`
+**Relationship:** Many AssetLineItems → One Customer (Account); 1:1 with BillingHeader; 1:Many with AssetTransactionHistory
+
+| Field | Data Type | Description | Churn Signal |
+|---|---|---|---|
+| `Id` | Identifier | Primary key | Join key — used in all billing & ATH queries |
+| `Account` | Lookup | Customer account FK | Customer link |
+| `Product` | Lookup | Product FK (links to price book) | Product context |
+| `ProductName` | String | Name of the product owned | Display / segmentation |
+| `Quantity` | Decimal | Number of units/seats on this asset | Volume baseline |
+| `NetPrice` | Currency | Price per unit after applied discounts | **Discount signal** |
+| `ListPrice` | Currency | Catalog list price per unit | Discount baseline |
+| `ARR` | Currency | Annual Recurring Revenue for this asset | **Revenue at risk** |
+| `MRR` | Currency | Monthly Recurring Revenue for this asset | MRR baseline |
+| `TCV` | Currency | Total Contract Value | Contract exposure |
+| `PriceType` | Picklist | Recurring / One-Time / Usage | Billing classification |
+| `Status` | Picklist | **Active** / Inactive / Cancelled | Filter to active only |
+| `StartDate` | Date | Asset commercial start date | Tenure signal |
+| `EndDate` | Date | Asset commercial end date | **Renewal proximity** |
+| `SellingTerm` | Decimal | Contract term in months | Commitment strength |
+| `AssetVersion` | String | Amendment version identifier | Change frequency signal |
+| `CurrentOrderLineItem` | Lookup | The order line that last amended this asset | Links to BillingHeader |
+
+**Key query — resolve AssetLineItem for a customer:**
+```sql
+SELECT Id, ProductName, ARR, MRR, TCV, NetPrice, ListPrice,
+       Quantity, Status, StartDate, EndDate, SellingTerm
+FROM AssetLineItem
+WHERE Account = :customer_id
+  AND Status = 'Active';
+```
+
+---
 
 ### 3.1 BillingHeader
 **Purpose:** Root billing configuration record — defines HOW an asset is billed.
